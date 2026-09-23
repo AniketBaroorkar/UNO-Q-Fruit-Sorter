@@ -1,0 +1,21 @@
+[Unit]
+Description=UNO Q Fruit Sorting Robot
+Wants=network-online.target
+After=network-online.target arduino-router.service
+Requires=arduino-router.service
+
+[Service]
+Type=simple
+# Change these values for the account and installation path on your UNO Q.
+User=arduino
+Group=arduino
+WorkingDirectory=/opt/uno_q_fruit_sorter
+Environment=PYTHONPATH=/opt/uno_q_fruit_sorter/python
+ExecStart=/opt/uno_q_fruit_sorter/.venv/bin/python -m fruit_sorter.main --config /opt/uno_q_fruit_sorter/config/robot.yaml --no-display
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=5
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

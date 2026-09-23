@@ -1,0 +1,235 @@
+application:
+  display: true
+  window_name: "UNO Q Fruit Sorter"
+  loop_delay_ms: 1
+
+web:
+  enabled: true
+  host: "0.0.0.0"
+  port: 8000
+  stream_fps: 10.0
+  jpeg_quality: 75
+  event_history: 30
+  log_level: "warning"
+
+  # Read-only is the safer default. To enable the browser E-stop button,
+  # set this true and replace the token with at least 12 random characters.
+  allow_remote_estop: false
+  control_token: ""
+
+logging:
+  level: "INFO"
+  file: "logs/fruit_sorter.log"
+  max_bytes: 5000000
+  backup_count: 5
+
+camera:
+  device: 0
+  width: 1280
+  height: 720
+  fps: 30
+  backend: "V4L2"
+  fourcc: "MJPG"
+  warmup_frames: 20
+  frame_timeout_s: 2.0
+  reconnect_delay_s: 1.0
+  max_consecutive_failures: 10
+
+detector:
+  model: "yolov8n.pt"
+  device: "cpu"
+  image_size: 640
+  confidence: 0.55
+  iou: 0.50
+  tracker: "bytetrack.yaml"
+  class_ids:
+    banana: 46
+    apple: 47
+    orange: 49
+
+tracking:
+  stable_frames: 8
+  max_center_jitter_px: 12.0
+  stale_after_frames: 30
+  min_bbox_area_px: 1200
+  revalidate_max_shift_px: 30.0
+  picked_memory_seconds: 300.0
+  picked_radius_mm: 35.0
+  rejected_cooldown_seconds: 5.0
+
+colour:
+  central_crop: 0.72
+  morphology_kernel: 5
+  min_pixels: 250
+  fruits:
+    apple:
+      min_ratio: 0.20
+      ranges:
+        - lower: [0, 90, 60]
+          upper: [10, 255, 255]
+        - lower: [170, 90, 60]
+          upper: [179, 255, 255]
+    banana:
+      min_ratio: 0.22
+      ranges:
+        - lower: [20, 80, 70]
+          upper: [38, 255, 255]
+    orange:
+      min_ratio: 0.22
+      ranges:
+        - lower: [8, 100, 70]
+          upper: [22, 255, 255]
+
+calibration:
+  # Automatic picking is deliberately locked until this is set true.
+  calibration_complete: false
+
+  # Placeholder identity matrix. Replace it with the calibration tool.
+  homography:
+    - [1.0, 0.0, 0.0]
+    - [0.0, 1.0, 0.0]
+    - [0.0, 0.0, 1.0]
+
+  # Image region in which fruit may be picked.
+  roi_polygon_px:
+    - [120, 80]
+    - [1160, 80]
+    - [1160, 650]
+    - [120, 650]
+
+  # Click these four known robot-frame marks in this exact order.
+  robot_reference_points_mm:
+    - [100.0, -150.0]
+    - [250.0, -150.0]
+    - [250.0, 150.0]
+    - [100.0, 150.0]
+
+  pick_z_mm:
+    apple: 32.0
+    banana: 25.0
+    orange: 35.0
+
+  # Fine offsets compensate for gripper shape and class-specific grasp bias.
+  pick_offsets_mm:
+    apple: [0.0, 0.0]
+    banana: [0.0, 0.0]
+    orange: [0.0, 0.0]
+
+arm:
+  home_deg: [90.0, 90.0, 90.0, 90.0, 90.0, 90.0]
+  wrist_roll_joint_deg: 0.0
+
+  geometry:
+    base_height_mm: 60.0
+    upper_arm_mm: 120.0
+    forearm_mm: 120.0
+    tool_mm: 80.0
+    tool_pitch_deg: -90.0
+    elbow_solution: "negative"
+
+  gripper:
+    open_deg: 60.0
+    closed_deg: 125.0
+    close_dwell_s: 0.50
+    release_dwell_s: 0.40
+
+  servos:
+    - name: "base"
+      channel: 0
+      min_deg: 10.0
+      max_deg: 170.0
+      min_pulse_us: 500
+      max_pulse_us: 2500
+      kinematic_zero_deg: 90.0
+      direction: 1
+
+    - name: "shoulder"
+      channel: 1
+      min_deg: 10.0
+      max_deg: 180.0
+      min_pulse_us: 500
+      max_pulse_us: 2500
+      kinematic_zero_deg: 90.0
+      direction: 1
+
+    - name: "elbow"
+      channel: 2
+      min_deg: 0.0
+      max_deg: 175.0
+      min_pulse_us: 500
+      max_pulse_us: 2500
+      kinematic_zero_deg: 90.0
+      direction: 1
+
+    - name: "wrist_pitch"
+      channel: 3
+      min_deg: 0.0
+      max_deg: 175.0
+      min_pulse_us: 500
+      max_pulse_us: 2500
+      kinematic_zero_deg: 90.0
+      direction: 1
+
+    - name: "wrist_roll"
+      channel: 4
+      min_deg: 10.0
+      max_deg: 170.0
+      min_pulse_us: 500
+      max_pulse_us: 2500
+      kinematic_zero_deg: 90.0
+      direction: 1
+
+    - name: "gripper"
+      channel: 5
+      min_deg: 20.0
+      max_deg: 150.0
+      min_pulse_us: 500
+      max_pulse_us: 2500
+      kinematic_zero_deg: 90.0
+      direction: 1
+
+motion:
+  safe_travel_z_mm: 75.0
+  approach_clearance_mm: 45.0
+  path_step_mm: 15.0
+  max_joint_speed_deg_s: 45.0
+  min_move_ms: 250
+  max_move_ms: 4500
+  command_timeout_margin_s: 2.0
+
+workspace:
+  x_min_mm: 90.0
+  x_max_mm: 270.0
+  y_min_mm: -185.0
+  y_max_mm: 185.0
+  z_min_mm: 15.0
+  z_max_mm: 115.0
+  keepout_cylinders:
+    - name: "base"
+      x_mm: 0.0
+      y_mm: 0.0
+      radius_mm: 70.0
+      z_min_mm: 0.0
+      z_max_mm: 100.0
+
+boxes:
+  apple:
+    x_mm: 125.0
+    y_mm: -145.0
+    release_z_mm: 55.0
+  banana:
+    x_mm: 160.0
+    y_mm: 0.0
+    release_z_mm: 55.0
+  orange:
+    x_mm: 125.0
+    y_mm: 145.0
+    release_z_mm: 55.0
+
+safety:
+  rpc_socket: "/var/run/arduino-router.sock"
+  rpc_timeout_s: 2.0
+  connect_timeout_s: 15.0
+  heartbeat_interval_s: 0.25
+  watchdog_timeout_ms: 2000
+  shutdown_disables_outputs: true

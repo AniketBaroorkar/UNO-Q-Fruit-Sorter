@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UNO Q Fruit Sorter</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">QUALCOMM ARDUINO UNO Q</p>
+      <h1>Fruit Sorting Robot</h1>
+    </div>
+    <div class="connection">
+      <span id="connection-dot" class="status-dot offline"></span>
+      <div>
+        <strong id="connection-text">Connecting</strong>
+        <small id="last-update">Waiting for telemetry</small>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="kpi-grid">
+      <article class="kpi apple">
+        <span>Red apples sorted</span>
+        <strong id="count-apple">0</strong>
+      </article>
+      <article class="kpi banana">
+        <span>Yellow bananas sorted</span>
+        <strong id="count-banana">0</strong>
+      </article>
+      <article class="kpi orange">
+        <span>Oranges sorted</span>
+        <strong id="count-orange">0</strong>
+      </article>
+      <article class="kpi total">
+        <span>Total completed</span>
+        <strong id="count-total">0</strong>
+      </article>
+    </section>
+
+    <section class="primary-grid">
+      <article class="panel video-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">LIVE VISION</p>
+            <h2>Camera and YOLO tracking</h2>
+          </div>
+          <span id="fps-badge" class="badge">0 FPS</span>
+        </div>
+        <div class="video-frame">
+          <img id="live-video" src="/video" alt="Live annotated camera stream">
+          <div id="video-offline" class="video-offline">Waiting for camera frames…</div>
+        </div>
+        <div class="metrics-row">
+          <div><span>Frame</span><strong id="frame-number">0</strong></div>
+          <div><span>Inference</span><strong id="inference-ms">0 ms</strong></div>
+          <div><span>Detections</span><strong id="detection-count">0</strong></div>
+          <div><span>Uptime</span><strong id="uptime">00:00:00</strong></div>
+        </div>
+      </article>
+
+      <aside class="side-stack">
+        <article class="panel state-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="panel-kicker">ROBOT STATUS</p>
+              <h2 id="robot-state">Starting</h2>
+            </div>
+            <span id="state-badge" class="badge neutral">STARTING</span>
+          </div>
+          <dl class="status-list">
+            <div><dt>Camera</dt><dd id="camera-status">Offline</dd></div>
+            <div><dt>Robot link</dt><dd id="robot-link">Offline</dd></div>
+            <div><dt>Servo outputs</dt><dd id="outputs-status">Disabled</dd></div>
+            <div><dt>Motion</dt><dd id="motion-status">Idle</dd></div>
+            <div><dt>Calibration</dt><dd id="calibration-status">Locked</dd></div>
+            <div><dt>Mode</dt><dd id="run-mode">Hardware</dd></div>
+          </dl>
+        </article>
+
+        <article id="safety-panel" class="panel safety-panel">
+          <div class="panel-heading compact">
+            <div>
+              <p class="panel-kicker">SAFETY</p>
+              <h2 id="safety-heading">Checking</h2>
+            </div>
+            <span id="safety-badge" class="badge warning">UNKNOWN</span>
+          </div>
+          <dl class="status-list">
+            <div><dt>MCU fault</dt><dd id="fault-code">Unknown</dd></div>
+            <div><dt>Physical E-stop</dt><dd id="physical-estop">Unknown</dd></div>
+            <div><dt>Last error</dt><dd id="last-error">None</dd></div>
+          </dl>
+          <div id="remote-control" class="remote-control hidden">
+            <label for="control-token">Control token</label>
+            <input id="control-token" type="password" autocomplete="off" placeholder="Enter configured token">
+            <button id="estop-button" class="estop-button" type="button">
+              Emergency stop
+            </button>
+            <small>This sends a software stop. The physical power-cut E-stop remains primary.</small>
+          </div>
+        </article>
+      </aside>
+    </section>
+
+    <section class="secondary-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">CURRENT OBJECTS</p>
+            <h2>Detection and validation data</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fruit</th>
+                <th>Track</th>
+                <th>Confidence</th>
+                <th>Colour match</th>
+                <th>Stable</th>
+                <th>Pixel centre</th>
+                <th>Robot X/Y</th>
+                <th>Decision</th>
+              </tr>
+            </thead>
+            <tbody id="detections-body">
+              <tr><td colspan="8" class="empty-row">No fruit detected</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">ACTIVE JOB</p>
+            <h2>Pick-and-place target</h2>
+          </div>
+        </div>
+        <div id="active-target" class="empty-card">No active target</div>
+        <div class="last-sort">
+          <h3>Last completed sort</h3>
+          <div id="last-sort" class="empty-card">No completed cycles</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="secondary-grid">
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">ARM TELEMETRY</p>
+            <h2>Current servo angles</h2>
+          </div>
+        </div>
+        <div id="servo-bars" class="servo-bars"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-kicker">EVENT LOG</p>
+            <h2>Recent robot activity</h2>
+          </div>
+        </div>
+        <div id="events" class="events">
+          <div class="empty-card">No events yet</div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    Local dashboard for the UNO Q fruit sorting robot. Keep the robot inside a guarded work area.
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
